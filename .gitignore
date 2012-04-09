@@ -1,0 +1,8 @@
+.rvmrc
+.chef
+.rvm*
+*.swp
+.DS_Store
+.vagrant
+metadata.json
+cookbooks
