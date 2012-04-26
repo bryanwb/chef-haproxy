@@ -14,12 +14,17 @@ defaults
         option  httplog
         option  dontlognull
         retries 3
-        redispatch
+        option redispatch
         maxconn 2000
         contimeout      5000
         clitimeout      50000
         srvtimeout      50000
+        <% if node["haproxy"]["x_forwarded_for"] -%>
+        option httpclose
+        option forwardfor
+        <% end -%>
         
+
 # Set up application listeners here.
 listen application 0.0.0.0:<%= node["haproxy"]["incoming_port"] %>
   balance  <%= node["haproxy"]["balance_algorithm"] %>

@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: haproxy
-# Recipe:: dev
+# Recipe:: source
 #
 # Copyright 2012, CX inc.
 #
@@ -20,11 +20,15 @@
 include_recipe "build-essential"
 include_recipe "ark"
 
+user "haproxy"
+
 case node.platform
 when "redhat","centos","fedora"
   package "pcre-devel"
+  init_script = "haproxy.init.el"
 when "ubuntu","debian"
   package "libpcre3-dev"
+  init_script = "haproxy.init.deb"
 end
 
 ark "haproxy" do
@@ -49,6 +53,7 @@ execute "halog_make" do
   action :nothing
 end
 
+
 execute "halog_make_install" do
   cwd "#{node['haproxy']['dev']['src_dir']}/contrib/halog"
   command "cp halog /usr/local/bin"
@@ -57,31 +62,49 @@ execute "halog_make_install" do
   action :nothing
 end
 
-# template "/etc/default/haproxy" do
-#   source "haproxy-default.erb"
-#   owner "root"
-#   group "root"
-#   mode 0644
-# end
+cookbook_file "/etc/init.d/haproxy" do
+  source init_script
+  owner "root"
+  group "root"
+  mode 0755
+  notifies :restart, "service[haproxy]"
+end
 
-# service "haproxy" do
-#   supports :restart => true, :status => true, :reload => true
-#   action [:enable, :start]
-# end
+service "haproxy" do
+  supports :restart => true, :status => true, :reload => true
+  action :nothing
+end
 
-# template "/etc/init.d/haproxy" do
-#   source "haproxy_init_el.erb"
-#   owner "root"
-#   group "root"
-#   mode 0644
-#   notifies :restart, "service[haproxy]"
-# end
+template "/etc/default/haproxy" do
+  source "haproxy-default.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[haproxy]"
+end
 
+directory "/etc/haproxy"
 
-# template "/etc/haproxy/haproxy.cfg" do
-#   source "haproxy.cfg.erb"
-#   owner "root"
-#   group "root"
-#   mode 0644
-#   notifies :restart, "service[haproxy]"
-# end
+template "/etc/haproxy/haproxy.cfg" do
+  source "haproxy.cfg.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[haproxy]"
+end
+
+service "haproxy" do
+  action [:enable, :start]
+end
+
+file "/etc/rsyslog.d/haproxy.conf" do
+  owner  "root"
+  group  "root"
+  mode   "0755"
+  content <<-EOF
+  # dropped off by Chef 
+  local0.*       /var/log/haproxy.log
+  EOF
+end
+
+  
