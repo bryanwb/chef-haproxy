@@ -53,7 +53,7 @@ Attributes
 Usage
 =====
 
-Use either the default recipe or the `app_lb` recipe.
+Use either the default recipe, `app_lb`, or `vhost_lb` recipe.
 
 When using the default recipe, modify the haproxy.cfg.erb file with listener(s) for your sites/servers.
 
@@ -74,6 +74,9 @@ The search uses the node's `chef_environment`. For example, create `environments
     name "production"
     description "Nodes in the production environment."
     % knife environment from file production.rb
+
+
+The `vhost_lb` recipe reads virtual hosts from the databag proxy/vhosts.json that defines virtual hosts, what backends they should be forwarded to 
 
 License and Author
 ==================

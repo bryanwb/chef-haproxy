@@ -29,4 +29,14 @@ default['haproxy']['ssl_incoming_port'] = "443"
 default['haproxy']['ssl_member_port'] = "8443"
 default['haproxy']['dev']['download_url'] = "http://haproxy.1wt.eu/download/1.5/src/snapshot/haproxy-ss-20120403.tar.gz"
 default['haproxy']['dev']['checksum'] = 'ba0424bf7d23b3a607ee24bbb855bb0ea347d7ffde0bec0cb12a89623cbaf911'
+default['haproxy']['backends'] = []
+default['haproxy']['vhosts_data_bag'] = 'proxy/vhosts'
 
+case node.platform
+when "redhat","centos","fedora"
+  default['haproxy']['install_package']  = "pcre-devel"
+  default['haproxy']['sysv_init_template'] = "haproxy.init.el"
+when "ubuntu","debian"
+  default['haproxy']['install_package'] = "libpcre3-dev"
+  default['haproxy']['sysv_init_template'] = "haproxy.init.deb"
+end

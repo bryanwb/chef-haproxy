@@ -1,0 +1,53 @@
+global
+        log 127.0.0.1   local0
+        log 127.0.0.1   local1 notice
+        #log loghost    local0 info
+        maxconn 4096
+        #debug
+        #quiet
+        user haproxy
+        group haproxy
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        retries 3
+        redispatch
+        maxconn 2000
+        contimeout      5000
+        clitimeout      50000
+        srvtimeout      50000
+        <% if node["haproxy"]["x_forwarded_for"] -%>
+        option httpclose
+        option forwardfor
+        <% end -%>
+
+frontend webserver
+         bind :80
+         <% @vhosts.each do |vhost| -%>
+         acl is_<%= vhost['name'] %> hdr_beg(host) -i  <%= vhost['domain_name'] %>
+         use_backend <%= vhost['name'] %> if is_<%= vhost['name'] %>     
+         <% end -%>
+
+<% @vhosts.each do |vhost| -%>
+backend <%= vhost['name'] %>
+        balance  source
+        <% vhost['rewrite_rules'].each do |rule| %>
+        reqirep <%= rule %>
+        <% end -%>
+        <% counter = 1 -%>
+        <% vhost['members'].each do |m| -%>
+        server <%= "#{vhost['name']}#{counter} #{m['ipaddress']}:#{m['port']}" %> weight 1 maxconn 100 check 
+        <% counter += 1 -%>
+        <% end -%>        
+
+<% end -%>
+
+
+<% if node["haproxy"]["enable_admin"] -%>
+listen admin 0.0.0.0:22002
+  mode http
+  stats uri /
+<% end -%>
