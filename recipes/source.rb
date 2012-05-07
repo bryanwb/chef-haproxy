@@ -22,8 +22,6 @@ include_recipe "ark"
 
 user "haproxy"
 
-package node['haproxy']['install_package']
-
 ark "haproxy" do
   url node['haproxy']['dev']['download_url']
   version "1.5"
