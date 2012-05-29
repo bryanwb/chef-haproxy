@@ -1,0 +1,17 @@
+#ALL LOGS
+local0.*       /var/log/haproxy.log
+
+
+<% node['haproxy']['log']['vhosts'].each do |vhost| %>
+$template <%= vhosts['name'] %>,"<%= vhosts['format'] %>" 
+local1.*     /var/log/haproxy/<%= vhosts['name'] %>.log;<%= vhosts['name'] %>
+<% end %>
+
+
+
+
+
+
+
+
+
