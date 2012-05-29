@@ -19,6 +19,8 @@
 
 include_recipe "build-essential"
 include_recipe "ark"
+include_recipe "logrotate"
+
 
 user "haproxy"
 
@@ -61,6 +63,15 @@ cookbook_file "/etc/init.d/haproxy" do
   notifies :restart, "service[haproxy]"
 end
 
+template "/etc/haproxy/haproxy.cfg" do
+  source "haproxy.cfg.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[haproxy]"
+  action :create_if_missing
+end
+
 service "haproxy" do
   supports :restart => true, :status => true, :reload => true
   action :nothing
@@ -71,7 +82,6 @@ template "/etc/default/haproxy" do
   owner "root"
   group "root"
   mode 0644
-  notifies :restart, "service[haproxy]"
 end
 
 directory "/etc/haproxy"
@@ -85,5 +95,12 @@ file "/etc/rsyslog.d/haproxy.conf" do
   local0.*       /var/log/haproxy.log
   EOF
 end
-
   
+# add logrotation for .log and .txt
+logrotate_app "haproxy" do
+  cookbook "logrotate"
+  path     "/var/log/haproxy.log"
+  frequency "daily"
+  rotate    30
+  create    "664 haproxy haproxy"
+end

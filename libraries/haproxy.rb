@@ -36,9 +36,9 @@ def proxy_me(name=nil, backend=nil, &block)
     new_backend = HaproxyBlock.new(name)
     new_backend.instance_eval(&block)
     remove_duplicates(node['haproxy']['backends'], new_backend.backend)
-    node['haproxy']['backends'].push new_backend.backend
+    node['haproxy']['backends'] << new_backend.backend
   end
-  Chef::Log.debug("The proxy_backends are #{node['proxy']} ") 
+  Chef::Log.debug("The proxy_backends are #{node['haproxy']['backends']} ") 
 end
 
 def remove_duplicates(backends, new_backend)

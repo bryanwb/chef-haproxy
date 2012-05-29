@@ -33,7 +33,8 @@ frontend webserver
 
 <% @vhosts.each do |vhost| -%>
 backend <%= vhost['name'] %>
-        balance  source
+        balance  roundrobin
+        cookie SRV insert indirect nocache maxidle 30m
         <% vhost['rewrite_rules'].each do |rule| %>
         reqirep <%= rule %>
         <% end -%>
