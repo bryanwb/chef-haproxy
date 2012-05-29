@@ -76,14 +76,14 @@ end
 
 directory "/etc/haproxy"
 
-file "/etc/rsyslog.d/haproxy.conf" do
-  owner  "root"
-  group  "root"
-  mode   "0755"
-  content <<-EOF
-  # dropped off by Chef 
-  local0.*       /var/log/haproxy.log
-  EOF
-end
+
+
+
+
+ 
+
+
+
+
 
   
