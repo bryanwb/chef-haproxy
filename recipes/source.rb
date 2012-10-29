@@ -22,6 +22,13 @@ include_recipe "ark"
 
 user "haproxy"
 
+case node['platform_family']
+when "debian"
+  %w{ libpcre3 libpcre3-dev }
+when "rhel"
+  %w{ pcre pcre-devel }
+end.each { |pkg| package pkg }
+
 ark "haproxy" do
   url node['haproxy']['dev']['download_url']
   version "1.5"
