@@ -62,6 +62,7 @@ restart() {
     return 1
   fi
   stop
+  sleep 2
   start
 }
 
