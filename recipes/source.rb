@@ -30,28 +30,6 @@ ark "haproxy" do
   action :install_with_make
 end
 
-execute "halog_make" do
-  cwd "#{node['haproxy']['dev']['src_dir']}/contrib/halog"
-  case node['kernel']['machine']
-  when "x86_64"
-    command "make halog64"
-  when "i686"
-    command "make halog"
-  end
-  user node['haproxy']['user']
-  only_if do File.exists?("#{node['haproxy']['dev']['src_dir']}/contrib/halog/Makefile") end
-  notifies :run, "execute[halog_make_install]", :immediately
-  action :nothing
-end
-
-
-execute "halog_make_install" do
-  cwd "#{node['haproxy']['dev']['src_dir']}/contrib/halog"
-  command "cp halog /usr/local/bin"
-  user "root"
-  only_if do File.exists?("#{node['haproxy']['dev']['src_dir']}/contrib/halog/halog") end
-  action :nothing
-end
 
 cookbook_file "/etc/init.d/haproxy" do
   source node['haproxy']['sysv_init_template']
@@ -76,26 +54,17 @@ end
 
 directory "/etc/haproxy"
 
-# template "/etc/haproxy/haproxy.cfg" do
-#   source "haproxy.cfg.erb"
-#   owner "root"
-#   group "root"
-#   mode 0644
-#   notifies :restart, "service[haproxy]"
-# end
+template "/etc/haproxy/haproxy.cfg" do
+  source "haproxy.cfg.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :restart, "service[haproxy]"
+end
 
 service "haproxy" do
   action [:enable, :start]
 end
 
-file "/etc/rsyslog.d/haproxy.conf" do
-  owner  "root"
-  group  "root"
-  mode   "0755"
-  content <<-EOF
-  # dropped off by Chef 
-  local0.*       /var/log/haproxy.log
-  EOF
-end
 
   
