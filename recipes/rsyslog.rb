@@ -16,10 +16,11 @@ file "/etc/rsyslog.d/haproxy.conf" do
   # dropped off by Chef 
   local0.*       /var/log/haproxy.log
   EOF
+  notifies :restart, "service[rsyslog]"
 end
 
 logrotate_app "haproxy" do
-  path "/var/log/haproxy/*.log"
+  path "/var/log/haproxy.log"
   frequency "daily"
   rotate "90"
   create  "664 root root"

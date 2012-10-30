@@ -6,6 +6,8 @@ description       "Installs and configures haproxy 1.5dev"
 long_description  IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version           "0.0.7"
 
+%w{ ark build-essential logrotate }.each {|ckbk| depends ckbk }
+
 recipe "haproxy", "Installs and configures haproxy 1.5dev"
 
 %w{ debian ubuntu redhat centos fedora}.each do |os|

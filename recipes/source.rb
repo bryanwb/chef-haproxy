@@ -37,7 +37,6 @@ ark "haproxy" do
   action :install_with_make
 end
 
-
 cookbook_file "/etc/init.d/haproxy" do
   source node['haproxy']['sysv_init_template']
   owner "root"
