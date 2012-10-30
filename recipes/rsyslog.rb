@@ -2,12 +2,6 @@
 
 include_recipe "logrotate"
 
-directory "/var/log/haproxy" do
-  owner "root"
-  group "root"
-  mode "0755"
-end
-
 file "/etc/rsyslog.d/haproxy.conf" do
   owner  "root"
   group  "root"
