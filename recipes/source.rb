@@ -17,6 +17,9 @@
 # limitations under the License.
 #
 
+require 'open3'
+require 'fileutils'
+
 include_recipe "build-essential"
 include_recipe "ark"
 
@@ -24,18 +27,59 @@ user "haproxy"
 
 case node['platform_family']
 when "debian"
-  %w{ libpcre3 libpcre3-dev }
+  %w{ libpcre3 libpcre3-dev patch }
 when "rhel"
-  %w{ pcre pcre-devel }
+  %w{ pcre pcre-static pcre-devel patch openssl-devel }
 end.each { |pkg| package pkg }
 
+make_opts = [
+             "TARGET=linux26",
+             "USE_LINUX_SPLICE=1",
+             "CPU=native",
+             "USE_VSYSCALL=1",
+             "USE_STATIC_PCRE=1",
+             "USE_OPENSSL=1"
+            ]
+
+patches_path = "#{node['ark']['prefix_home']}/haproxy/patches"
+haproxy_home = "#{node['ark']['prefix_home']}/haproxy"
+
 ark "haproxy" do
-  url node['haproxy']['dev']['download_url']
-  version "1.5"
-  checksum node['haproxy']['dev']['checksum']
-  make_opts [ "TARGET=linux26", "USE_LINUX_SPLICE=1", "USE_VSYSCALL=1", "USE_PCRE=1" ] 
-  action :install_with_make
+  url node['haproxy']['src_url']
+  version "1.5-dev12"
+  checksum node['haproxy']['src_checksum']
 end
+
+
+ark "patches" do
+  url node['haproxy']['patches_url']
+  version "20121114"
+  checksum  node['haproxy']['patches_checksum']
+  prefix_home haproxy_home
+end
+
+bash "patch haproxy source" do
+  user "root"
+  cwd "/usr/local/haproxy"
+  code <<-EOF
+  for i in patches/*.diff ; do
+     patch -p1 < $i
+  done
+  touch patches/patches.installed
+  EOF
+  creates "#{patches_path}/patches.installed"
+end
+
+bash "make and install haproxy" do
+  cwd haproxy_home
+  code <<-EOF
+  make #{make_opts.join(' ')}
+  make install
+  touch haproxy.installed
+  EOF
+  creates "#{haproxy_home}/haproxy.installed"
+end
+
 
 cookbook_file "/etc/init.d/haproxy" do
   source node['haproxy']['sysv_init_template']
